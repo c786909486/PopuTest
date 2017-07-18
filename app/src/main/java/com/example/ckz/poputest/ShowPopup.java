@@ -1,11 +1,15 @@
 package com.example.ckz.poputest;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 
 /**
@@ -24,6 +28,8 @@ public class ShowPopup {
 
     private PopupWindow popupWindow;
 
+    private LinearLayout simpleView;
+
     /**
      * 初始化
      * @param context
@@ -39,9 +45,62 @@ public class ShowPopup {
      * @param layoutId
      * @return
      */
-    public ShowPopup showSimplePopupWindows(int layoutId){
+    public ShowPopup createLayoutPopupWindow(int layoutId){
         popView = inflater.inflate(layoutId,null);
         popupWindow = new PopupWindow(popView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        popupWindow.setFocusable(true);
+        popupWindow.setOutsideTouchable(false);
+        ColorDrawable dw = new ColorDrawable(0x30000000);
+        popupWindow.setBackgroundDrawable(dw);
+        return showPopup;
+    }
+    public interface OnPositionClickListener {
+        void OnPositonClick(View view,int position);
+    }
+    private OnPositionClickListener positionClickListener;
+
+    public void setPositionClickListener(OnPositionClickListener posiitonClickListener) {
+        this.positionClickListener = posiitonClickListener;
+    }
+
+    /**
+     * 简易popupWindow，不用输入布局
+     * @param btnName
+     * @return
+     */
+    public ShowPopup createSimplePopupWindow(String... btnName){
+        simpleView = new LinearLayout(context);
+        simpleView.setGravity(Gravity.CENTER_HORIZONTAL);
+        simpleView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        simpleView.setOrientation(LinearLayout.VERTICAL);
+        simpleView.setBackgroundColor(Color.WHITE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            simpleView.setDividerDrawable(context.getResources().getDrawable(R.drawable.diver_line,null));
+        }else {
+            simpleView.setDividerDrawable(context.getResources().getDrawable(R.drawable.diver_line));
+        }
+        simpleView.setShowDividers(LinearLayout.SHOW_DIVIDER_MIDDLE);
+        simpleView.setPadding(10,8,10,0);
+        for (int i = 0;i<btnName.length;i++){
+            Button button = new Button(context);
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+//            params.setMargins(0,20,0,0);
+            button.setLayoutParams(params);
+            button.setGravity(Gravity.CENTER);
+            button.setText(btnName[i]);
+            button.setTextSize(18.0f);
+            button.setBackgroundColor(Color.parseColor("#ffffff"));
+            simpleView.addView(button);
+            final int finalI = i;
+            button.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    positionClickListener.OnPositonClick(view, finalI);
+                }
+            });
+        }
+
+        popupWindow = new PopupWindow(simpleView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         popupWindow.setFocusable(true);
         popupWindow.setOutsideTouchable(false);
         ColorDrawable dw = new ColorDrawable(0x30000000);
@@ -116,8 +175,9 @@ public class ShowPopup {
        return showPopup;
    }
 
+
     /**
-     * 关闭弹窗
+     * 关闭弹窗的点击事件
      * @param id
      * @return
      */
@@ -133,6 +193,12 @@ public class ShowPopup {
        return showPopup;
    }
 
+   public void closePopupWindow(){
+       if (popupWindow!=null){
+           popupWindow.dismiss();
+       }
+   }
+
     /**
      * 获取view
      * @return
@@ -143,4 +209,5 @@ public class ShowPopup {
        }
        return null;
    }
+
 }
